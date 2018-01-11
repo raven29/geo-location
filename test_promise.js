@@ -2,11 +2,23 @@ const maxmind = require('maxmind');
 const sqlite3 = require('sqlite3');
 const db = new sqlite3.Database('dionaea.sqlite');
 
-// db.all('select count(*), connection_protocol from `connections` group by connection_protocol', (err, data) => {
-//   console.log(data);
-// });
+const promise = new Promise ((resolve, reject) => {
+  maxmind.open('GeoLite2-Country.mmdb', (err, countryLookup) => {
+    if (err) {
+      reject(err);
+    } else {
+      resolve(countryLookup);
+    }
+  });
+});
 
-maxmind.open('GeoLite2-Country.mmdb', (err, countryLookup) => {
+
+promise.then(selectCountries, (err) => {
+  console.log(err);
+});
+
+
+function selectCountries(countryLookup){
   let geodata;
   let country;
   let country_data;
@@ -38,5 +50,4 @@ maxmind.open('GeoLite2-Country.mmdb', (err, countryLookup) => {
   }, (err) => {
     console.log(attacks_per_country);
   });
-});
-
+}
